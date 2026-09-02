@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title id="head-title">report.html</title>
+      <style type="text/css">body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  vertical-align: top;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+#environment ul {
+  margin: 0;
+  padding: 0 20px;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+.col-links__extra {
+  margin-right: 3px;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.logwrapper {
+  max-height: 230px;
+  overflow-y: scroll;
+  background-color: #e6e6e6;
+}
+.logwrapper.expanded {
+  max-height: none;
+}
+.logwrapper.expanded .logexpander:after {
+  content: "collapse [-]";
+}
+.logwrapper .logexpander {
+  z-index: 1;
+  position: sticky;
+  top: 10px;
+  width: max-content;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 5px 7px;
+  margin: 10px 0 10px calc(100% - 80px);
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.logwrapper .logexpander:after {
+  content: "expand [+]";
+}
+.logwrapper .logexpander:hover {
+  color: #000;
+  border-color: #000;
+}
+.logwrapper .log {
+  min-height: 40px;
+  position: relative;
+  top: -50px;
+  height: calc(100% + 50px);
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  padding: 5px;
+  padding-right: 80px;
+  white-space: pre-wrap;
+}
+
+div.media {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin: 0 5px;
+  overflow: hidden;
+  width: 320px;
+}
+
+.media-container {
+  display: grid;
+  grid-template-columns: 25px auto 25px;
+  align-items: center;
+  flex: 1 1;
+  overflow: hidden;
+  height: 200px;
+}
+
+.media-container--fullscreen {
+  grid-template-columns: 0px auto 0px;
+}
+
+.media-container__nav--right,
+.media-container__nav--left {
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-container__viewport {
+  cursor: pointer;
+  text-align: center;
+  height: inherit;
+}
+.media-container__viewport img,
+.media-container__viewport video {
+  object-fit: cover;
+  width: 100%;
+  max-height: 100%;
+}
+
+.media__name,
+.media__counter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex: 0 0 25px;
+  align-items: center;
+}
+
+.collapsible td:not(.col-links) {
+  cursor: pointer;
+}
+.collapsible td:not(.col-links):hover::after {
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.col-result {
+  width: 130px;
+}
+.col-result:hover::after {
+  content: " (hide details)";
+}
+
+.col-result.collapsed:hover::after {
+  content: " (show details)";
+}
+
+#environment-header h2:hover::after {
+  content: " (hide details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#environment-header.collapsed h2:hover::after {
+  content: " (show details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+.sortable.desc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: -12.5px;
+  border: 10px solid #4caf50;
+  border-bottom: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+.sortable.asc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: 12.5px;
+  border: 10px solid #4caf50;
+  border-top: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.hidden, .summary__reload__button.hidden {
+  display: none;
+}
+
+.summary__data {
+  flex: 0 0 550px;
+}
+.summary__reload {
+  flex: 1 1;
+  display: flex;
+  justify-content: center;
+}
+.summary__reload__button {
+  flex: 0 0 300px;
+  display: flex;
+  color: white;
+  font-weight: bold;
+  background-color: #4caf50;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.summary__reload__button:hover {
+  background-color: #46a049;
+}
+.summary__spacer {
+  flex: 0 0 550px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filters,
+.collapse {
+  display: flex;
+  align-items: center;
+}
+.filters button,
+.collapse button {
+  color: #999;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.filters button:hover,
+.collapse button:hover {
+  color: #ccc;
+}
+
+.filter__label {
+  margin-right: 10px;
+}
+
+      </style>
+    
+  </head>
+  <body>
+    <h1 id="title">report.html</h1>
+    <p>Report generated on 02-Sep-2026 at 07:05:16 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a>
+        v4.1.1</p>
+    <div id="environment-header">
+      <h2>Environment</h2>
+    </div>
+    <table id="environment"></table>
+    <!-- TEMPLATES -->
+      <template id="template_environment_row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
+    <template id="template_results-table__body--empty">
+      <tbody class="results-table-row">
+        <tr id="not-found-message">
+          <td colspan="4">No results found. Check the filters.</th>
+        </tr>
+    </template>
+    <template id="template_results-table__tbody">
+      <tbody class="results-table-row">
+        <tr class="collapsible">
+        </tr>
+        <tr class="extras-row">
+          <td class="extra" colspan="4">
+            <div class="extraHTML"></div>
+            <div class="media">
+              <div class="media-container">
+                  <div class="media-container__nav--left"><</div>
+                  <div class="media-container__viewport">
+                    <img src="" />
+                    <video controls>
+                      <source src="" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="media-container__nav--right">></div>
+                </div>
+                <div class="media__name"></div>
+                <div class="media__counter"></div>
+            </div>
+            <div class="logwrapper">
+              <div class="logexpander"></div>
+              <div class="log"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </template>
+    <!-- END TEMPLATES -->
+    <div class="summary">
+      <div class="summary__data">
+        <h2>Summary</h2>
+        <div class="additional-summary prefix">
+        </div>
+        <p class="run-count">46 tests took 87 ms.</p>
+        <p class="filter">(Un)check the boxes to filter the results.</p>
+        <div class="summary__reload">
+          <div class="summary__reload__button hidden" onclick="location.reload()">
+            <div>There are still tests running. <br />Reload this page to get the latest results!</div>
+          </div>
+        </div>
+        <div class="summary__spacer"></div>
+        <div class="controls">
+          <div class="filters">
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="failed" />
+            <span class="failed">1 Failed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="passed" />
+            <span class="passed">27 Passed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="skipped" disabled/>
+            <span class="skipped">0 Skipped,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xfailed" />
+            <span class="xfailed">18 Expected failures,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xpassed" disabled/>
+            <span class="xpassed">0 Unexpected passes,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="error" disabled/>
+            <span class="error">0 Errors,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="rerun" disabled/>
+            <span class="rerun">0 Reruns</span>
+          </div>
+          <div class="collapse">
+            <button id="show_all_details">Show all details</button>&nbsp;/&nbsp;<button id="hide_all_details">Hide all details</button>
+          </div>
+        </div>
+      </div>
+      <div class="additional-summary summary">
+      </div>
+      <div class="additional-summary postfix">
+      </div>
+    </div>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" data-column-type="result">Result</th>
+          <th class="sortable" data-column-type="testId">Test</th>
+          <th class="sortable" data-column-type="duration">Duration</th>
+          <th>Links</th>
+        </tr>
+      </thead>
+    </table>
+  </body>
+  <footer>
+    <div id="data-container" data-jsonblob="{&#34;environment&#34;: {&#34;Python&#34;: &#34;3.12.14&#34;, &#34;Platform&#34;: &#34;Linux-6.8.0-117-generic-aarch64-with-glibc2.41&#34;, &#34;Packages&#34;: {&#34;pytest&#34;: &#34;8.3.5&#34;, &#34;pluggy&#34;: &#34;1.6.0&#34;}, &#34;Plugins&#34;: {&#34;metadata&#34;: &#34;3.1.1&#34;, &#34;html&#34;: &#34;4.1.1&#34;}}, &#34;tests&#34;: {&#34;tests/contract/test_openapi_contract.py::test_documented_integration_update_route_exists&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_documented_integration_update_route_exists&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_documented_integration_update_route_exists&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;\nswagger = {&amp;#x27;basePath&amp;#x27;: &amp;#x27;/api/v1&amp;#x27;, &amp;#x27;definitions&amp;#x27;: {&amp;#x27;httputil.HTTPError&amp;#x27;: {&amp;#x27;properties&amp;#x27;: {&amp;#x27;code&amp;#x27;: {&amp;#x27;example&amp;#x27;: 400, &amp;#x27;type&amp;#x27;: &amp;#x27;intege...ription&amp;#x27;: &amp;#x27;A test API with intentional bugs for QA automation testing&amp;#x27;, &amp;#x27;title&amp;#x27;: &amp;#x27;QA Test API&amp;#x27;, &amp;#x27;version&amp;#x27;: &amp;#x27;1.0&amp;#x27;}, ...}\n\n    @pytest.mark.xfail(\n        reason=&amp;quot;BUG-011: documented integration PUT path does not exist at runtime&amp;quot;,\n        strict=True,\n    )\n    def test_documented_integration_update_route_exists(user1_client, swagger):\n        documented = user1_client.put(\n            &amp;quot;integrations&amp;quot;, json={&amp;quot;id&amp;quot;: &amp;quot;unused&amp;quot;, &amp;quot;name&amp;quot;: &amp;quot;unused&amp;quot;}\n        )\n        assert &amp;quot;put&amp;quot; in swagger[&amp;quot;paths&amp;quot;][&amp;quot;/integrations&amp;quot;]\n&amp;gt;       assert documented.status_code != 404\nE       assert 404 != 404\nE        +  where 404 = &amp;lt;Response [404]&amp;gt;.status_code\n\ntests/contract/test_openapi_contract.py:42: AssertionError\n&#34;}], &#34;tests/contract/test_openapi_contract.py::test_asset_path_id_schema_matches_runtime&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_asset_path_id_schema_matches_runtime&#34;, &#34;duration&#34;: &#34;5 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_asset_path_id_schema_matches_runtime&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;5 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, integration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbe376a0&amp;gt;\nasset_factory = &amp;lt;function asset_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbe37740&amp;gt;\nswagger = {&amp;#x27;basePath&amp;#x27;: &amp;#x27;/api/v1&amp;#x27;, &amp;#x27;definitions&amp;#x27;: {&amp;#x27;httputil.HTTPError&amp;#x27;: {&amp;#x27;properties&amp;#x27;: {&amp;#x27;code&amp;#x27;: {&amp;#x27;example&amp;#x27;: 400, &amp;#x27;type&amp;#x27;: &amp;#x27;intege...ription&amp;#x27;: &amp;#x27;A test API with intentional bugs for QA automation testing&amp;#x27;, &amp;#x27;title&amp;#x27;: &amp;#x27;QA Test API&amp;#x27;, &amp;#x27;version&amp;#x27;: &amp;#x27;1.0&amp;#x27;}, ...}\n\n    @pytest.mark.xfail(\n        reason=&amp;quot;BUG-012: asset ID is documented as integer but runtime uses UUID strings&amp;quot;,\n        strict=True,\n    )\n    def test_asset_path_id_schema_matches_runtime(\n        user1_client, integration_factory, asset_factory, swagger\n    ):\n        integration = integration_factory(user1_client)\n        asset = asset_factory(user1_client, integration[&amp;quot;id&amp;quot;])\n        UUID(asset[&amp;quot;id&amp;quot;])\n        operation = swagger[&amp;quot;paths&amp;quot;][&amp;quot;/assets/{id}&amp;quot;][&amp;quot;get&amp;quot;]\n        parameter = find_parameter(operation, name=&amp;quot;id&amp;quot;, location=&amp;quot;path&amp;quot;)\n&amp;gt;       assert parameter[&amp;quot;type&amp;quot;] == &amp;quot;string&amp;quot;\nE       AssertionError: assert &amp;#x27;integer&amp;#x27; == &amp;#x27;string&amp;#x27;\nE         \nE         - string\nE         + integer\n\ntests/contract/test_openapi_contract.py:58: AssertionError\n&#34;}], &#34;tests/contract/test_openapi_contract.py::test_create_status_is_documented[integrations-payload0-integration]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_create_status_is_documented[integrations-payload0-integration]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_create_status_is_documented[integrations-payload0-integration]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, integration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbe37880&amp;gt;\nswagger = {&amp;#x27;basePath&amp;#x27;: &amp;#x27;/api/v1&amp;#x27;, &amp;#x27;definitions&amp;#x27;: {&amp;#x27;httputil.HTTPError&amp;#x27;: {&amp;#x27;properties&amp;#x27;: {&amp;#x27;code&amp;#x27;: {&amp;#x27;example&amp;#x27;: 400, &amp;#x27;type&amp;#x27;: &amp;#x27;intege...ription&amp;#x27;: &amp;#x27;A test API with intentional bugs for QA automation testing&amp;#x27;, &amp;#x27;title&amp;#x27;: &amp;#x27;QA Test API&amp;#x27;, &amp;#x27;version&amp;#x27;: &amp;#x27;1.0&amp;#x27;}, ...}\npath = &amp;#x27;integrations&amp;#x27;, payload = {&amp;#x27;name&amp;#x27;: &amp;#x27;contract-create-integration-634271aa16&amp;#x27;, &amp;#x27;type&amp;#x27;: &amp;#x27;github&amp;#x27;}, operation = &amp;#x27;integration&amp;#x27;\n\n    @pytest.mark.parametrize(\n        (&amp;quot;path&amp;quot;, &amp;quot;payload&amp;quot;, &amp;quot;operation&amp;quot;),\n        [\n            (&amp;quot;integrations&amp;quot;, {&amp;quot;name&amp;quot;: &amp;quot;contract-create-integration&amp;quot;, &amp;quot;type&amp;quot;: &amp;quot;github&amp;quot;}, &amp;quot;integration&amp;quot;),\n            (&amp;quot;assets&amp;quot;, None, &amp;quot;asset&amp;quot;),\n        ],\n    )\n    @pytest.mark.xfail(\n        reason=&amp;quot;BUG-013: create returns undocumented 201 instead of documented 200&amp;quot;,\n        strict=True,\n    )\n    def test_create_status_is_documented(\n        user1_client, integration_factory, swagger, path, payload, operation\n    ):\n        payload = payload.copy() if payload else None\n        if payload:\n            payload[&amp;quot;name&amp;quot;] = f&amp;quot;{payload[&amp;#x27;name&amp;#x27;]}-{uuid4().hex[:10]}&amp;quot;\n        if operation == &amp;quot;asset&amp;quot;:\n            integration = integration_factory(user1_client)\n            payload = {\n                &amp;quot;name&amp;quot;: f&amp;quot;contract-create-asset-{uuid4().hex[:10]}&amp;quot;,\n                &amp;quot;description&amp;quot;: &amp;quot;contract&amp;quot;,\n                &amp;quot;integration_id&amp;quot;: integration[&amp;quot;id&amp;quot;],\n            }\n    \n        response = user1_client.post(path, json=payload)\n        resource = response.json()\n        try:\n&amp;gt;           assert str(response.status_code) in swagger[&amp;quot;paths&amp;quot;][f&amp;quot;/{path}&amp;quot;][&amp;quot;post&amp;quot;][&amp;quot;responses&amp;quot;]\nE           AssertionError: assert &amp;#x27;201&amp;#x27; in {&amp;#x27;200&amp;#x27;: {&amp;#x27;description&amp;#x27;: &amp;#x27;OK&amp;#x27;, &amp;#x27;schema&amp;#x27;: {&amp;#x27;$ref&amp;#x27;: &amp;#x27;#/definitions/model.Integration&amp;#x27;}}, &amp;#x27;400&amp;#x27;: {&amp;#x27;description&amp;#x27;: &amp;#x27;Bad Requ....HTTPError&amp;#x27;}}, &amp;#x27;500&amp;#x27;: {&amp;#x27;description&amp;#x27;: &amp;#x27;Internal Server Error&amp;#x27;, &amp;#x27;schema&amp;#x27;: {&amp;#x27;$ref&amp;#x27;: &amp;#x27;#/definitions/httputil.HTTPError&amp;#x27;}}}\nE            +  where &amp;#x27;201&amp;#x27; = str(201)\nE            +    where 201 = &amp;lt;Response [201]&amp;gt;.status_code\n\ntests/contract/test_openapi_contract.py:90: AssertionError\n&#34;}], &#34;tests/contract/test_openapi_contract.py::test_create_status_is_documented[assets-None-asset]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_create_status_is_documented[assets-None-asset]&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_create_status_is_documented[assets-None-asset]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, integration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbc98400&amp;gt;\nswagger = {&amp;#x27;basePath&amp;#x27;: &amp;#x27;/api/v1&amp;#x27;, &amp;#x27;definitions&amp;#x27;: {&amp;#x27;httputil.HTTPError&amp;#x27;: {&amp;#x27;properties&amp;#x27;: {&amp;#x27;code&amp;#x27;: {&amp;#x27;example&amp;#x27;: 400, &amp;#x27;type&amp;#x27;: &amp;#x27;intege...ription&amp;#x27;: &amp;#x27;A test API with intentional bugs for QA automation testing&amp;#x27;, &amp;#x27;title&amp;#x27;: &amp;#x27;QA Test API&amp;#x27;, &amp;#x27;version&amp;#x27;: &amp;#x27;1.0&amp;#x27;}, ...}\npath = &amp;#x27;assets&amp;#x27;, payload = {&amp;#x27;description&amp;#x27;: &amp;#x27;contract&amp;#x27;, &amp;#x27;integration_id&amp;#x27;: &amp;#x27;64d92845-bde9-493d-8350-b94a632c5eef&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;contract-create-asset-cebc9e317d&amp;#x27;}, operation = &amp;#x27;asset&amp;#x27;\n\n    @pytest.mark.parametrize(\n        (&amp;quot;path&amp;quot;, &amp;quot;payload&amp;quot;, &amp;quot;operation&amp;quot;),\n        [\n            (&amp;quot;integrations&amp;quot;, {&amp;quot;name&amp;quot;: &amp;quot;contract-create-integration&amp;quot;, &amp;quot;type&amp;quot;: &amp;quot;github&amp;quot;}, &amp;quot;integration&amp;quot;),\n            (&amp;quot;assets&amp;quot;, None, &amp;quot;asset&amp;quot;),\n        ],\n    )\n    @pytest.mark.xfail(\n        reason=&amp;quot;BUG-013: create returns undocumented 201 instead of documented 200&amp;quot;,\n        strict=True,\n    )\n    def test_create_status_is_documented(\n        user1_client, integration_factory, swagger, path, payload, operation\n    ):\n        payload = payload.copy() if payload else None\n        if payload:\n            payload[&amp;quot;name&amp;quot;] = f&amp;quot;{payload[&amp;#x27;name&amp;#x27;]}-{uuid4().hex[:10]}&amp;quot;\n        if operation == &amp;quot;asset&amp;quot;:\n            integration = integration_factory(user1_client)\n            payload = {\n                &amp;quot;name&amp;quot;: f&amp;quot;contract-create-asset-{uuid4().hex[:10]}&amp;quot;,\n                &amp;quot;description&amp;quot;: &amp;quot;contract&amp;quot;,\n                &amp;quot;integration_id&amp;quot;: integration[&amp;quot;id&amp;quot;],\n            }\n    \n        response = user1_client.post(path, json=payload)\n        resource = response.json()\n        try:\n&amp;gt;           assert str(response.status_code) in swagger[&amp;quot;paths&amp;quot;][f&amp;quot;/{path}&amp;quot;][&amp;quot;post&amp;quot;][&amp;quot;responses&amp;quot;]\nE           AssertionError: assert &amp;#x27;201&amp;#x27; in {&amp;#x27;200&amp;#x27;: {&amp;#x27;description&amp;#x27;: &amp;#x27;OK&amp;#x27;, &amp;#x27;schema&amp;#x27;: {&amp;#x27;$ref&amp;#x27;: &amp;#x27;#/definitions/model.Asset&amp;#x27;}}, &amp;#x27;400&amp;#x27;: {&amp;#x27;description&amp;#x27;: &amp;#x27;Bad Request&amp;#x27;, ...ttputil.HTTPError&amp;#x27;}}, &amp;#x27;404&amp;#x27;: {&amp;#x27;description&amp;#x27;: &amp;#x27;Not Found&amp;#x27;, &amp;#x27;schema&amp;#x27;: {&amp;#x27;$ref&amp;#x27;: &amp;#x27;#/definitions/httputil.HTTPError&amp;#x27;}}, ...}\nE            +  where &amp;#x27;201&amp;#x27; = str(201)\nE            +    where 201 = &amp;lt;Response [201]&amp;gt;.status_code\n\ntests/contract/test_openapi_contract.py:90: AssertionError\n&#34;}], &#34;tests/contract/test_openapi_contract.py::test_empty_integration_collection_matches_array_schema&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_empty_integration_collection_matches_array_schema&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_empty_integration_collection_matches_array_schema&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;\nswagger = {&amp;#x27;basePath&amp;#x27;: &amp;#x27;/api/v1&amp;#x27;, &amp;#x27;definitions&amp;#x27;: {&amp;#x27;httputil.HTTPError&amp;#x27;: {&amp;#x27;properties&amp;#x27;: {&amp;#x27;code&amp;#x27;: {&amp;#x27;example&amp;#x27;: 400, &amp;#x27;type&amp;#x27;: &amp;#x27;intege...ription&amp;#x27;: &amp;#x27;A test API with intentional bugs for QA automation testing&amp;#x27;, &amp;#x27;title&amp;#x27;: &amp;#x27;QA Test API&amp;#x27;, &amp;#x27;version&amp;#x27;: &amp;#x27;1.0&amp;#x27;}, ...}\n\n    @pytest.mark.xfail(\n        reason=&amp;quot;BUG-014: empty collection is JSON null instead of an array&amp;quot;, strict=True\n    )\n    def test_empty_integration_collection_matches_array_schema(user1_client, swagger):\n        response = user1_client.get(&amp;quot;integrations&amp;quot;)\n        if response.json():\n            pytest.skip(&amp;quot;requires an otherwise clean service to exercise empty serialization&amp;quot;)\n        schema = swagger[&amp;quot;paths&amp;quot;][&amp;quot;/integrations&amp;quot;][&amp;quot;get&amp;quot;][&amp;quot;responses&amp;quot;][&amp;quot;200&amp;quot;][&amp;quot;schema&amp;quot;]\n&amp;gt;       validate(response.json(), schema)\n\ntests/contract/test_openapi_contract.py:104: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\ninstance = None, schema = {&amp;#x27;items&amp;#x27;: {&amp;#x27;$ref&amp;#x27;: &amp;#x27;#/definitions/model.Integration&amp;#x27;}, &amp;#x27;type&amp;#x27;: &amp;#x27;array&amp;#x27;}, cls = &amp;lt;class &amp;#x27;jsonschema.validators.Draft202012Validator&amp;#x27;&amp;gt;, args = (), kwargs = {}\nvalidator = Draft202012Validator(schema={&amp;#x27;items&amp;#x27;: {&amp;#x27;$ref&amp;#x27;: &amp;#x27;#/definition...l.Integration&amp;#x27;}, &amp;#x27;type&amp;#x27;: &amp;#x27;array&amp;#x27;}, format_checker=None), error = &amp;lt;ValidationError: &amp;quot;None is not of type &amp;#x27;array&amp;#x27;&amp;quot;&amp;gt;\n\n    def validate(instance, schema, cls=None, *args, **kwargs):  # noqa: D417\n        &amp;quot;&amp;quot;&amp;quot;\n        Validate an instance under the given schema.\n    \n            &amp;gt;&amp;gt;&amp;gt; validate([2, 3, 4], {&amp;quot;maxItems&amp;quot;: 2})\n            Traceback (most recent call last):\n                ...\n            ValidationError: [2, 3, 4] is too long\n    \n        :func:`~jsonschema.validators.validate` will first verify that the\n        provided schema is itself valid, since not doing so can lead to less\n        obvious error messages and fail in less obvious or consistent ways.\n    \n        If you know you have a valid schema already, especially\n        if you intend to validate multiple instances with\n        the same schema, you likely would prefer using the\n        `jsonschema.protocols.Validator.validate` method directly on a\n        specific validator (e.g. ``Draft202012Validator.validate``).\n    \n    \n        Arguments:\n    \n            instance:\n    \n                The instance to validate\n    \n            schema:\n    \n                The schema to validate with\n    \n            cls (jsonschema.protocols.Validator):\n    \n                The class that will be used to validate the instance.\n    \n        If the ``cls`` argument is not provided, two things will happen\n        in accordance with the specification. First, if the schema has a\n        :kw:`$schema` keyword containing a known meta-schema [#]_ then the\n        proper validator will be used. The specification recommends that\n        all schemas contain :kw:`$schema` properties for this reason. If no\n        :kw:`$schema` property is found, the default validator class is the\n        latest released draft.\n    \n        Any other provided positional and keyword arguments will be passed\n        on when instantiating the ``cls``.\n    \n        Raises:\n    \n            `jsonschema.exceptions.ValidationError`:\n    \n                if the instance is invalid\n    \n            `jsonschema.exceptions.SchemaError`:\n    \n                if the schema itself is invalid\n    \n        .. rubric:: Footnotes\n        .. [#] known by a validator registered with\n            `jsonschema.validators.validates`\n    \n        &amp;quot;&amp;quot;&amp;quot;\n        if cls is None:\n            cls = validator_for(schema)\n    \n        cls.check_schema(schema)\n        validator = cls(schema, *args, **kwargs)\n        error = exceptions.best_match(validator.iter_errors(instance))\n        if error is not None:\n&amp;gt;           raise error\nE           jsonschema.exceptions.ValidationError: None is not of type &amp;#x27;array&amp;#x27;\nE           \nE           Failed validating &amp;#x27;type&amp;#x27; in schema:\nE               {&amp;#x27;type&amp;#x27;: &amp;#x27;array&amp;#x27;, &amp;#x27;items&amp;#x27;: {&amp;#x27;$ref&amp;#x27;: &amp;#x27;#/definitions/model.Integration&amp;#x27;}}\nE           \nE           On instance:\nE               None\n\n/usr/local/lib/python3.12/site-packages/jsonschema/validators.py:1332: ValidationError\n&#34;}], &#34;tests/contract/test_openapi_contract.py::test_error_body_matches_documented_schema&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_error_body_matches_documented_schema&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_error_body_matches_documented_schema&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;\nswagger = {&amp;#x27;basePath&amp;#x27;: &amp;#x27;/api/v1&amp;#x27;, &amp;#x27;definitions&amp;#x27;: {&amp;#x27;httputil.HTTPError&amp;#x27;: {&amp;#x27;properties&amp;#x27;: {&amp;#x27;code&amp;#x27;: {&amp;#x27;example&amp;#x27;: 400, &amp;#x27;type&amp;#x27;: &amp;#x27;intege...ription&amp;#x27;: &amp;#x27;A test API with intentional bugs for QA automation testing&amp;#x27;, &amp;#x27;title&amp;#x27;: &amp;#x27;QA Test API&amp;#x27;, &amp;#x27;version&amp;#x27;: &amp;#x27;1.0&amp;#x27;}, ...}\n\n    @pytest.mark.xfail(\n        reason=&amp;quot;BUG-015: runtime error body does not match HTTPError schema&amp;quot;, strict=True\n    )\n    def test_error_body_matches_documented_schema(user1_client, swagger):\n        response = user1_client.get(f&amp;quot;integrations/{uuid4()}&amp;quot;)\n        schema = swagger[&amp;quot;definitions&amp;quot;][&amp;quot;httputil.HTTPError&amp;quot;]\n        assert response.status_code == 404\n        body = response.json()\n        validate(body, schema)\n&amp;gt;       assert set(body) == set(schema[&amp;quot;properties&amp;quot;])\nE       AssertionError: assert {&amp;#x27;error&amp;#x27;} == {&amp;#x27;code&amp;#x27;, &amp;#x27;message&amp;#x27;}\nE         \nE         Extra items in the left set:\nE         &amp;#x27;error&amp;#x27;\nE         Extra items in the right set:\nE         &amp;#x27;code&amp;#x27;\nE         &amp;#x27;message&amp;#x27;\nE         Use -v to get more diff\n\ntests/contract/test_openapi_contract.py:116: AssertionError\n&#34;}], &#34;tests/contract/test_openapi_contract.py::test_basic_authentication_is_documented&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_basic_authentication_is_documented&#34;, &#34;duration&#34;: &#34;0 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_basic_authentication_is_documented&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;0 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;swagger = {&amp;#x27;basePath&amp;#x27;: &amp;#x27;/api/v1&amp;#x27;, &amp;#x27;definitions&amp;#x27;: {&amp;#x27;httputil.HTTPError&amp;#x27;: {&amp;#x27;properties&amp;#x27;: {&amp;#x27;code&amp;#x27;: {&amp;#x27;example&amp;#x27;: 400, &amp;#x27;type&amp;#x27;: &amp;#x27;intege...ription&amp;#x27;: &amp;#x27;A test API with intentional bugs for QA automation testing&amp;#x27;, &amp;#x27;title&amp;#x27;: &amp;#x27;QA Test API&amp;#x27;, &amp;#x27;version&amp;#x27;: &amp;#x27;1.0&amp;#x27;}, ...}\n\n    @pytest.mark.xfail(\n        reason=&amp;quot;BUG-016: Swagger omits enforced Basic authentication and some 401 responses&amp;quot;,\n        strict=True,\n    )\n    def test_basic_authentication_is_documented(swagger):\n        definitions = swagger.get(&amp;quot;securityDefinitions&amp;quot;, {})\n        basic_schemes = [value for value in definitions.values() if value.get(&amp;quot;type&amp;quot;) == &amp;quot;basic&amp;quot;]\n&amp;gt;       assert basic_schemes\nE       assert []\n\ntests/contract/test_openapi_contract.py:126: AssertionError\n&#34;}], &#34;tests/contract/test_openapi_contract.py::test_duplicate_integration_status_is_documented&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_duplicate_integration_status_is_documented&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_duplicate_integration_status_is_documented&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, integration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbc99d00&amp;gt;\nswagger = {&amp;#x27;basePath&amp;#x27;: &amp;#x27;/api/v1&amp;#x27;, &amp;#x27;definitions&amp;#x27;: {&amp;#x27;httputil.HTTPError&amp;#x27;: {&amp;#x27;properties&amp;#x27;: {&amp;#x27;code&amp;#x27;: {&amp;#x27;example&amp;#x27;: 400, &amp;#x27;type&amp;#x27;: &amp;#x27;intege...ription&amp;#x27;: &amp;#x27;A test API with intentional bugs for QA automation testing&amp;#x27;, &amp;#x27;title&amp;#x27;: &amp;#x27;QA Test API&amp;#x27;, &amp;#x27;version&amp;#x27;: &amp;#x27;1.0&amp;#x27;}, ...}\n\n    @pytest.mark.xfail(\n        reason=&amp;quot;BUG-017: integration duplicate 409 response is undocumented&amp;quot;, strict=True\n    )\n    def test_duplicate_integration_status_is_documented(\n        user1_client, integration_factory, swagger\n    ):\n        created = integration_factory(\n            user1_client, name=f&amp;quot;contract-duplicate-{uuid4().hex[:10]}&amp;quot;\n        )\n        response = user1_client.post(\n            &amp;quot;integrations&amp;quot;, json={&amp;quot;name&amp;quot;: created[&amp;quot;name&amp;quot;], &amp;quot;type&amp;quot;: created[&amp;quot;type&amp;quot;]}\n        )\n        assert response.status_code == 409\n&amp;gt;       assert &amp;quot;409&amp;quot; in swagger[&amp;quot;paths&amp;quot;][&amp;quot;/integrations&amp;quot;][&amp;quot;post&amp;quot;][&amp;quot;responses&amp;quot;]\nE       AssertionError: assert &amp;#x27;409&amp;#x27; in {&amp;#x27;200&amp;#x27;: {&amp;#x27;description&amp;#x27;: &amp;#x27;OK&amp;#x27;, &amp;#x27;schema&amp;#x27;: {&amp;#x27;$ref&amp;#x27;: &amp;#x27;#/definitions/model.Integration&amp;#x27;}}, &amp;#x27;400&amp;#x27;: {&amp;#x27;description&amp;#x27;: &amp;#x27;Bad Requ....HTTPError&amp;#x27;}}, &amp;#x27;500&amp;#x27;: {&amp;#x27;description&amp;#x27;: &amp;#x27;Internal Server Error&amp;#x27;, &amp;#x27;schema&amp;#x27;: {&amp;#x27;$ref&amp;#x27;: &amp;#x27;#/definitions/httputil.HTTPError&amp;#x27;}}}\n\ntests/contract/test_openapi_contract.py:145: AssertionError\n&#34;}], &#34;tests/contract/test_openapi_contract.py::test_integration_success_responses_match_live_schemas&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_integration_success_responses_match_live_schemas&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_integration_success_responses_match_live_schemas&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/contract/test_openapi_contract.py::test_asset_success_responses_match_live_schemas&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/contract/test_openapi_contract.py::test_asset_success_responses_match_live_schemas&#34;, &#34;duration&#34;: &#34;5 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/contract/test_openapi_contract.py::test_asset_success_responses_match_live_schemas&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;5 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/functional/test_assets.py::test_create_and_get_asset&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/functional/test_assets.py::test_create_and_get_asset&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/functional/test_assets.py::test_create_and_get_asset&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/functional/test_assets.py::test_patch_asset_persists&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/functional/test_assets.py::test_patch_asset_persists&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/functional/test_assets.py::test_patch_asset_persists&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/functional/test_assets.py::test_list_assets_by_integration&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/functional/test_assets.py::test_list_assets_by_integration&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/functional/test_assets.py::test_list_assets_by_integration&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/functional/test_assets.py::test_delete_asset&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/functional/test_assets.py::test_delete_asset&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/functional/test_assets.py::test_delete_asset&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/functional/test_integrations.py::test_create_and_get_integration&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/functional/test_integrations.py::test_create_and_get_integration&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/functional/test_integrations.py::test_create_and_get_integration&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/functional/test_integrations.py::test_update_integration_persists&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/functional/test_integrations.py::test_update_integration_persists&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/functional/test_integrations.py::test_update_integration_persists&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, integration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbc98d60&amp;gt;\n\n    @pytest.mark.xfail(reason=&amp;quot;BUG-009: integration PUT is a successful no-op&amp;quot;, strict=True)\n    def test_update_integration_persists(user1_client, integration_factory):\n        created = integration_factory(user1_client)\n        response = user1_client.put(\n            f&amp;quot;integrations/{created[&amp;#x27;id&amp;#x27;]}&amp;quot;,\n            json={&amp;quot;id&amp;quot;: created[&amp;quot;id&amp;quot;], &amp;quot;name&amp;quot;: &amp;quot;persisted-update&amp;quot;},\n        )\n        persisted = user1_client.get(f&amp;quot;integrations/{created[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n    \n        assert response.status_code == 200\n        assert persisted.status_code == 200\n&amp;gt;       assert response.json()[&amp;quot;name&amp;quot;] == &amp;quot;persisted-update&amp;quot;\nE       AssertionError: assert &amp;#x27;qa-integration-fde2f38ccb&amp;#x27; == &amp;#x27;persisted-update&amp;#x27;\nE         \nE         - persisted-update\nE         + qa-integration-fde2f38ccb\n\ntests/functional/test_integrations.py:27: AssertionError\n&#34;}], &#34;tests/functional/test_integrations.py::test_delete_integration&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/functional/test_integrations.py::test_delete_integration&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/functional/test_integrations.py::test_delete_integration&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/functional/test_integrations.py::test_integration_pagination&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/functional/test_integrations.py::test_integration_pagination&#34;, &#34;duration&#34;: &#34;6 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/functional/test_integrations.py::test_integration_pagination&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;6 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, integration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbc99f80&amp;gt;\n\n    def test_integration_pagination(user1_client, integration_factory):\n        created = [integration_factory(user1_client) for _ in range(4)]\n        page_one = user1_client.get(&amp;quot;integrations&amp;quot;, params={&amp;quot;page&amp;quot;: 1, &amp;quot;limit&amp;quot;: 2})\n        page_two = user1_client.get(&amp;quot;integrations&amp;quot;, params={&amp;quot;page&amp;quot;: 2, &amp;quot;limit&amp;quot;: 2})\n        full_list = user1_client.get(&amp;quot;integrations&amp;quot;)\n    \n        assert page_one.status_code == page_two.status_code == 200\n        assert len(page_one.json()) == len(page_two.json()) == 2\n        page_one_ids = {item[&amp;quot;id&amp;quot;] for item in page_one.json()}\n        page_two_ids = {item[&amp;quot;id&amp;quot;] for item in page_two.json()}\n&amp;gt;       assert page_one_ids.isdisjoint(page_two_ids)\nE       AssertionError: assert False\nE        +  where False = &amp;lt;built-in method isdisjoint of set object at 0xe562dbe3da80&amp;gt;({&amp;#x27;8bae7ba8-3c24-4756-9bc8-1e40052d22a5&amp;#x27;, &amp;#x27;a755f936-c186-4b1a-83da-91877851cd2b&amp;#x27;})\nE        +    where &amp;lt;built-in method isdisjoint of set object at 0xe562dbe3da80&amp;gt; = {&amp;#x27;8bae7ba8-3c24-4756-9bc8-1e40052d22a5&amp;#x27;, &amp;#x27;a755f936-c186-4b1a-83da-91877851cd2b&amp;#x27;}.isdisjoint\n\ntests/functional/test_integrations.py:51: AssertionError\n&#34;}], &#34;tests/functional/test_integrations.py::test_delete_integration_with_asset_has_consistent_result&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/functional/test_integrations.py::test_delete_integration_with_asset_has_consistent_result&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/functional/test_integrations.py::test_delete_integration_with_asset_has_consistent_result&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_supplied_users_authenticate[user1_client]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_supplied_users_authenticate[user1_client]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_supplied_users_authenticate[user1_client]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_supplied_users_authenticate[user2_client]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_supplied_users_authenticate[user2_client]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_supplied_users_authenticate[user2_client]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_missing_credentials_are_rejected[integrations]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_missing_credentials_are_rejected[integrations]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_missing_credentials_are_rejected[integrations]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_missing_credentials_are_rejected[assets?integrationId=unknown]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_missing_credentials_are_rejected[assets?integrationId=unknown]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_missing_credentials_are_rejected[assets?integrationId=unknown]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[wrong_password]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[wrong_password]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[wrong_password]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[unknown_user]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[unknown_user]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[unknown_user]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[empty]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[empty]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[empty]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[empty_password]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[empty_password]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_invalid_credentials_are_rejected[empty_password]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_malformed_authorization_is_rejected[Basic !!!not-base64!!!]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_malformed_authorization_is_rejected[Basic !!!not-base64!!!]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_malformed_authorization_is_rejected[Basic !!!not-base64!!!]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_malformed_authorization_is_rejected[Bearer token]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_malformed_authorization_is_rejected[Bearer token]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_malformed_authorization_is_rejected[Bearer token]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_authentication.py::test_basic_credentials_without_password_are_rejected&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/security/test_authentication.py::test_basic_credentials_without_password_are_rejected&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_authentication.py::test_basic_credentials_without_password_are_rejected&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/security/test_tenant_isolation.py::test_integration_collections_are_tenant_scoped&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/security/test_tenant_isolation.py::test_integration_collections_are_tenant_scoped&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_tenant_isolation.py::test_integration_collections_are_tenant_scoped&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, user2_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dbe2ac90&amp;gt;\nintegration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbc9bf60&amp;gt;\n\n    @pytest.mark.tenant\n    @pytest.mark.xfail(reason=&amp;quot;BUG-001: integration collection leaks all tenants&amp;quot;, strict=True)\n    def test_integration_collections_are_tenant_scoped(\n        user1_client, user2_client, integration_factory\n    ):\n        user1 = integration_factory(user1_client)\n        user2 = integration_factory(user2_client)\n    \n        user1_items = user1_client.get(&amp;quot;integrations&amp;quot;).json()\n        user2_items = user2_client.get(&amp;quot;integrations&amp;quot;).json()\n        user1_ids = {item[&amp;quot;id&amp;quot;] for item in user1_items}\n        user2_ids = {item[&amp;quot;id&amp;quot;] for item in user2_items}\n    \n&amp;gt;       assert user1[&amp;quot;id&amp;quot;] in user1_ids and user2[&amp;quot;id&amp;quot;] not in user1_ids\nE       AssertionError: assert (&amp;#x27;b50dad11-44b3-401e-be4b-001fdff51106&amp;#x27; in {&amp;#x27;a51ae858-14cc-449a-b849-101cf0402260&amp;#x27;, &amp;#x27;b50dad11-44b3-401e-be4b-001fdff51106&amp;#x27;} and &amp;#x27;a51ae858-14cc-449a-b849-101cf0402260&amp;#x27; not in {&amp;#x27;a51ae858-14cc-449a-b849-101cf0402260&amp;#x27;, &amp;#x27;b50dad11-44b3-401e-be4b-001fdff51106&amp;#x27;})\n\ntests/security/test_tenant_isolation.py:22: AssertionError\n&#34;}], &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_get_integration&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_get_integration&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_get_integration&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, user2_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dbe2ac90&amp;gt;\nintegration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd084a0&amp;gt;\n\n    @pytest.mark.tenant\n    @pytest.mark.xfail(reason=&amp;quot;BUG-002: cross-tenant integration GET is allowed&amp;quot;, strict=True)\n    def test_other_tenant_cannot_get_integration(\n        user1_client, user2_client, integration_factory\n    ):\n        owned = integration_factory(user1_client)\n        response = user2_client.get(f&amp;quot;integrations/{owned[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n&amp;gt;       assert response.status_code in {403, 404}\nE       assert 200 in {403, 404}\nE        +  where 200 = &amp;lt;Response [200]&amp;gt;.status_code\n\ntests/security/test_tenant_isolation.py:33: AssertionError\n&#34;}], &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_update_integration&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_update_integration&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_update_integration&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, user2_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dbe2ac90&amp;gt;\nintegration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd08b80&amp;gt;\n\n    @pytest.mark.tenant\n    @pytest.mark.xfail(reason=&amp;quot;BUG-003: cross-tenant integration update is accepted&amp;quot;, strict=True)\n    def test_other_tenant_cannot_update_integration(\n        user1_client, user2_client, integration_factory\n    ):\n        owned = integration_factory(user1_client)\n        response = user2_client.put(\n            f&amp;quot;integrations/{owned[&amp;#x27;id&amp;#x27;]}&amp;quot;,\n            json={&amp;quot;id&amp;quot;: owned[&amp;quot;id&amp;quot;], &amp;quot;name&amp;quot;: &amp;quot;cross-tenant-change&amp;quot;},\n        )\n        owner_state = user1_client.get(f&amp;quot;integrations/{owned[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n    \n        unchanged = owner_state.status_code == 200 and owner_state.json()[&amp;quot;name&amp;quot;] == owned[&amp;quot;name&amp;quot;]\n&amp;gt;       assert response.status_code in {403, 404} and unchanged\nE       assert (200 in {403, 404})\nE        +  where 200 = &amp;lt;Response [200]&amp;gt;.status_code\n\ntests/security/test_tenant_isolation.py:49: AssertionError\n&#34;}], &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_delete_integration&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_delete_integration&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_delete_integration&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, user2_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dbe2ac90&amp;gt;\nintegration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd094e0&amp;gt;\n\n    @pytest.mark.tenant\n    @pytest.mark.xfail(reason=&amp;quot;BUG-004: cross-tenant integration DELETE succeeds&amp;quot;, strict=True)\n    def test_other_tenant_cannot_delete_integration(\n        user1_client, user2_client, integration_factory\n    ):\n        owned = integration_factory(user1_client)\n        response = user2_client.delete(f&amp;quot;integrations/{owned[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n        owner_state = user1_client.get(f&amp;quot;integrations/{owned[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n    \n&amp;gt;       assert response.status_code in {403, 404} and owner_state.status_code == 200\nE       assert (200 in {403, 404})\nE        +  where 200 = &amp;lt;Response [200]&amp;gt;.status_code\n\ntests/security/test_tenant_isolation.py:61: AssertionError\n&#34;}], &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_get_asset&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_get_asset&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_get_asset&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, user2_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dbe2ac90&amp;gt;\nintegration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd09bc0&amp;gt;, asset_factory = &amp;lt;function asset_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd09c60&amp;gt;\n\n    @pytest.mark.tenant\n    @pytest.mark.xfail(reason=&amp;quot;BUG-005: cross-tenant asset GET is allowed&amp;quot;, strict=True)\n    def test_other_tenant_cannot_get_asset(\n        user1_client, user2_client, integration_factory, asset_factory\n    ):\n        integration = integration_factory(user1_client)\n        asset = asset_factory(user1_client, integration[&amp;quot;id&amp;quot;])\n        response = user2_client.get(f&amp;quot;assets/{asset[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n&amp;gt;       assert response.status_code in {403, 404}\nE       assert 200 in {403, 404}\nE        +  where 200 = &amp;lt;Response [200]&amp;gt;.status_code\n\ntests/security/test_tenant_isolation.py:72: AssertionError\n&#34;}], &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_patch_asset&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_patch_asset&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_patch_asset&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, user2_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dbe2ac90&amp;gt;\nintegration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd0a0c0&amp;gt;, asset_factory = &amp;lt;function asset_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd0a160&amp;gt;\n\n    @pytest.mark.tenant\n    @pytest.mark.xfail(reason=&amp;quot;BUG-006: cross-tenant asset PATCH succeeds&amp;quot;, strict=True)\n    def test_other_tenant_cannot_patch_asset(\n        user1_client, user2_client, integration_factory, asset_factory\n    ):\n        integration = integration_factory(user1_client)\n        asset = asset_factory(user1_client, integration[&amp;quot;id&amp;quot;])\n        response = user2_client.patch(\n            &amp;quot;assets&amp;quot;,\n            json={&amp;quot;id&amp;quot;: asset[&amp;quot;id&amp;quot;], &amp;quot;name&amp;quot;: &amp;quot;cross-tenant-change&amp;quot;, &amp;quot;description&amp;quot;: &amp;quot;changed&amp;quot;},\n        )\n        owner_state = user1_client.get(f&amp;quot;assets/{asset[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n    \n        unchanged = owner_state.status_code == 200 and owner_state.json()[&amp;quot;name&amp;quot;] == asset[&amp;quot;name&amp;quot;]\n&amp;gt;       assert response.status_code in {403, 404} and unchanged\nE       assert (200 in {403, 404})\nE        +  where 200 = &amp;lt;Response [200]&amp;gt;.status_code\n\ntests/security/test_tenant_isolation.py:89: AssertionError\n&#34;}], &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_delete_asset&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_delete_asset&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_tenant_isolation.py::test_other_tenant_cannot_delete_asset&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, user2_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dbe2ac90&amp;gt;\nintegration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd0a660&amp;gt;, asset_factory = &amp;lt;function asset_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd0a700&amp;gt;\n\n    @pytest.mark.tenant\n    @pytest.mark.xfail(reason=&amp;quot;BUG-007: cross-tenant asset DELETE succeeds&amp;quot;, strict=True)\n    def test_other_tenant_cannot_delete_asset(\n        user1_client, user2_client, integration_factory, asset_factory\n    ):\n        integration = integration_factory(user1_client)\n        asset = asset_factory(user1_client, integration[&amp;quot;id&amp;quot;])\n        response = user2_client.delete(f&amp;quot;assets/{asset[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n        owner_state = user1_client.get(f&amp;quot;assets/{asset[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n    \n&amp;gt;       assert response.status_code in {403, 404} and owner_state.status_code == 200\nE       assert (204 in {403, 404})\nE        +  where 204 = &amp;lt;Response [204]&amp;gt;.status_code\n\ntests/security/test_tenant_isolation.py:102: AssertionError\n&#34;}], &#34;tests/security/test_tenant_isolation.py::test_asset_cannot_reference_other_tenant_integration&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/security/test_tenant_isolation.py::test_asset_cannot_reference_other_tenant_integration&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/security/test_tenant_isolation.py::test_asset_cannot_reference_other_tenant_integration&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;, user2_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dbe2ac90&amp;gt;\nintegration_factory = &amp;lt;function integration_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd0ac00&amp;gt;, asset_factory = &amp;lt;function asset_factory.&amp;lt;locals&amp;gt;.create at 0xe562dbd0aca0&amp;gt;\n\n    @pytest.mark.tenant\n    @pytest.mark.xfail(\n        reason=&amp;quot;BUG-008: asset may reference another tenant&amp;#x27;s integration&amp;quot;, strict=True\n    )\n    def test_asset_cannot_reference_other_tenant_integration(\n        user1_client, user2_client, integration_factory, asset_factory\n    ):\n        integration = integration_factory(user1_client)\n        response = user2_client.post(\n            &amp;quot;assets&amp;quot;,\n            json={\n                &amp;quot;name&amp;quot;: f&amp;quot;cross-tenant-reference-{uuid4().hex[:10]}&amp;quot;,\n                &amp;quot;description&amp;quot;: &amp;quot;must be rejected&amp;quot;,\n                &amp;quot;integration_id&amp;quot;: integration[&amp;quot;id&amp;quot;],\n            },\n        )\n        if response.status_code in {200, 201}:\n            asset_factory_created = response.json()\n            user2_client.delete(f&amp;quot;assets/{asset_factory_created[&amp;#x27;id&amp;#x27;]}&amp;quot;)\n    \n&amp;gt;       assert response.status_code in {403, 404}\nE       assert 201 in {403, 404}\nE        +  where 201 = &amp;lt;Response [201]&amp;gt;.status_code\n\ntests/security/test_tenant_isolation.py:125: AssertionError\n&#34;}], &#34;tests/validation/test_requests.py::test_wrong_json_property_types_are_rejected[integrations-payload0]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/validation/test_requests.py::test_wrong_json_property_types_are_rejected[integrations-payload0]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/validation/test_requests.py::test_wrong_json_property_types_are_rejected[integrations-payload0]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/validation/test_requests.py::test_wrong_json_property_types_are_rejected[assets-payload1]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/validation/test_requests.py::test_wrong_json_property_types_are_rejected[assets-payload1]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/validation/test_requests.py::test_wrong_json_property_types_are_rejected[assets-payload1]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/validation/test_requests.py::test_malformed_json_is_rejected[integrations]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/validation/test_requests.py::test_malformed_json_is_rejected[integrations]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/validation/test_requests.py::test_malformed_json_is_rejected[integrations]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/validation/test_requests.py::test_malformed_json_is_rejected[assets]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/validation/test_requests.py::test_malformed_json_is_rejected[assets]&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/validation/test_requests.py::test_malformed_json_is_rejected[assets]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/validation/test_requests.py::test_assets_require_integration_id_query&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/validation/test_requests.py::test_assets_require_integration_id_query&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/validation/test_requests.py::test_assets_require_integration_id_query&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/validation/test_requests.py::test_valid_nonexistent_resource_ids_return_not_found&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/validation/test_requests.py::test_valid_nonexistent_resource_ids_return_not_found&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/validation/test_requests.py::test_valid_nonexistent_resource_ids_return_not_found&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/validation/test_requests.py::test_malformed_resource_ids_return_not_found&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/validation/test_requests.py::test_malformed_resource_ids_return_not_found&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/validation/test_requests.py::test_malformed_resource_ids_return_not_found&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;tests/validation/test_requests.py::test_invalid_pagination_returns_contract_error&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;XFailed&#34;, &#34;testId&#34;: &#34;tests/validation/test_requests.py::test_invalid_pagination_returns_contract_error&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;XFailed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/validation/test_requests.py::test_invalid_pagination_returns_contract_error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;user1_client = &amp;lt;tests.api_client.ApiClient object at 0xe562dc2626f0&amp;gt;\nswagger = {&amp;#x27;basePath&amp;#x27;: &amp;#x27;/api/v1&amp;#x27;, &amp;#x27;definitions&amp;#x27;: {&amp;#x27;httputil.HTTPError&amp;#x27;: {&amp;#x27;properties&amp;#x27;: {&amp;#x27;code&amp;#x27;: {&amp;#x27;example&amp;#x27;: 400, &amp;#x27;type&amp;#x27;: &amp;#x27;intege...ription&amp;#x27;: &amp;#x27;A test API with intentional bugs for QA automation testing&amp;#x27;, &amp;#x27;title&amp;#x27;: &amp;#x27;QA Test API&amp;#x27;, &amp;#x27;version&amp;#x27;: &amp;#x27;1.0&amp;#x27;}, ...}\n\n    @pytest.mark.xfail(reason=&amp;quot;BUG-010: invalid pagination produces non-contract error&amp;quot;, strict=True)\n    def test_invalid_pagination_returns_contract_error(user1_client, swagger):\n        from jsonschema import validate\n    \n        response = user1_client.get(&amp;quot;integrations&amp;quot;, params={&amp;quot;page&amp;quot;: &amp;quot;text&amp;quot;, &amp;quot;limit&amp;quot;: -1})\n        schema = swagger[&amp;quot;definitions&amp;quot;][&amp;quot;httputil.HTTPError&amp;quot;]\n        body = response.json()\n        validate(body, schema)\n&amp;gt;       assert set(body) == set(schema[&amp;quot;properties&amp;quot;])\nE       AssertionError: assert {&amp;#x27;error&amp;#x27;} == {&amp;#x27;code&amp;#x27;, &amp;#x27;message&amp;#x27;}\nE         \nE         Extra items in the left set:\nE         &amp;#x27;error&amp;#x27;\nE         Extra items in the right set:\nE         &amp;#x27;code&amp;#x27;\nE         &amp;#x27;message&amp;#x27;\nE         Use -v to get more diff\n\ntests/validation/test_requests.py:61: AssertionError\n&#34;}]}, &#34;renderCollapsed&#34;: [&#34;passed&#34;], &#34;initialSort&#34;: &#34;result&#34;, &#34;title&#34;: &#34;report.html&#34;}"></div>
+    <script>
+      (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { getCollapsedCategory, setCollapsedIds } = require('./storage.js')
+
+class DataManager {
+    setManager(data) {
+        const collapsedCategories = [...getCollapsedCategory(data.renderCollapsed)]
+        const collapsedIds = []
+        const tests = Object.values(data.tests).flat().map((test, index) => {
+            const collapsed = collapsedCategories.includes(test.result.toLowerCase())
+            const id = `test_${index}`
+            if (collapsed) {
+                collapsedIds.push(id)
+            }
+            return {
+                ...test,
+                id,
+                collapsed,
+            }
+        })
+        const dataBlob = { ...data, tests }
+        this.data = { ...dataBlob }
+        this.renderData = { ...dataBlob }
+        setCollapsedIds(collapsedIds)
+    }
+
+    get allData() {
+        return { ...this.data }
+    }
+
+    resetRender() {
+        this.renderData = { ...this.data }
+    }
+
+    setRender(data) {
+        this.renderData.tests = [...data]
+    }
+
+    toggleCollapsedItem(id) {
+        this.renderData.tests = this.renderData.tests.map((test) =>
+            test.id === id ? { ...test, collapsed: !test.collapsed } : test,
+        )
+    }
+
+    set allCollapsed(collapsed) {
+        this.renderData = { ...this.renderData, tests: [...this.renderData.tests.map((test) => (
+            { ...test, collapsed }
+        ))] }
+    }
+
+    get testSubset() {
+        return [...this.renderData.tests]
+    }
+
+    get environment() {
+        return this.renderData.environment
+    }
+
+    get initialSort() {
+        return this.data.initialSort
+    }
+}
+
+module.exports = {
+    manager: new DataManager(),
+}
+
+},{"./storage.js":8}],2:[function(require,module,exports){
+const mediaViewer = require('./mediaviewer.js')
+const templateEnvRow = document.getElementById('template_environment_row')
+const templateResult = document.getElementById('template_results-table__tbody')
+
+function htmlToElements(html) {
+    const temp = document.createElement('template')
+    temp.innerHTML = html
+    return temp.content.childNodes
+}
+
+const find = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return elem.querySelector(selector)
+}
+
+const findAll = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return [...elem.querySelectorAll(selector)]
+}
+
+const dom = {
+    getStaticRow: (key, value) => {
+        const envRow = templateEnvRow.content.cloneNode(true)
+        const isObj = typeof value === 'object' && value !== null
+        const values = isObj ? Object.keys(value).map((k) => `${k}: ${value[k]}`) : null
+
+        const valuesElement = htmlToElements(
+            values ? `<ul>${values.map((val) => `<li>${val}</li>`).join('')}<ul>` : `<div>${value}</div>`)[0]
+        const td = findAll('td', envRow)
+        td[0].textContent = key
+        td[1].appendChild(valuesElement)
+
+        return envRow
+    },
+    getResultTBody: ({ testId, id, log, extras, resultsTableRow, tableHtml, result, collapsed }) => {
+        const resultBody = templateResult.content.cloneNode(true)
+        resultBody.querySelector('tbody').classList.add(result.toLowerCase())
+        resultBody.querySelector('tbody').id = testId
+        resultBody.querySelector('.collapsible').dataset.id = id
+
+        resultsTableRow.forEach((html) => {
+            const t = document.createElement('template')
+            t.innerHTML = html
+            resultBody.querySelector('.collapsible').appendChild(t.content)
+        })
+
+        if (log) {
+            // Wrap lines starting with "E" with span.error to color those lines red
+            const wrappedLog = log.replace(/^E.*$/gm, (match) => `<span class="error">${match}</span>`)
+            resultBody.querySelector('.log').innerHTML = wrappedLog
+        } else {
+            resultBody.querySelector('.log').remove()
+        }
+
+        if (collapsed) {
+            resultBody.querySelector('.collapsible > td')?.classList.add('collapsed')
+            resultBody.querySelector('.extras-row').classList.add('hidden')
+        } else {
+            resultBody.querySelector('.collapsible > td')?.classList.remove('collapsed')
+        }
+
+        const media = []
+        extras?.forEach(({ name, format_type, content }) => {
+            if (['image', 'video'].includes(format_type)) {
+                media.push({ path: content, name, format_type })
+            }
+
+            if (format_type === 'html') {
+                resultBody.querySelector('.extraHTML').insertAdjacentHTML('beforeend', `<div>${content}</div>`)
+            }
+        })
+        mediaViewer.setup(resultBody, media)
+
+        // Add custom html from the pytest_html_results_table_html hook
+        tableHtml?.forEach((item) => {
+            resultBody.querySelector('td[class="extra"]').insertAdjacentHTML('beforeend', item)
+        })
+
+        return resultBody
+    },
+}
+
+module.exports = {
+    dom,
+    htmlToElements,
+    find,
+    findAll,
+}
+
+},{"./mediaviewer.js":6}],3:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const storageModule = require('./storage.js')
+
+const getFilteredSubSet = (filter) =>
+    manager.allData.tests.filter(({ result }) => filter.includes(result.toLowerCase()))
+
+const doInitFilter = () => {
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+}
+
+const doFilter = (type, show) => {
+    if (show) {
+        storageModule.showCategory(type)
+    } else {
+        storageModule.hideCategory(type)
+    }
+
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+
+    const sortColumn = storageModule.getSort()
+    doSort(sortColumn, true)
+}
+
+module.exports = {
+    doFilter,
+    doInitFilter,
+}
+
+},{"./datamanager.js":1,"./sort.js":7,"./storage.js":8}],4:[function(require,module,exports){
+const { redraw, bindEvents, renderStatic } = require('./main.js')
+const { doInitFilter } = require('./filter.js')
+const { doInitSort } = require('./sort.js')
+const { manager } = require('./datamanager.js')
+const data = JSON.parse(document.getElementById('data-container').dataset.jsonblob)
+
+function init() {
+    manager.setManager(data)
+    doInitFilter()
+    doInitSort()
+    renderStatic()
+    redraw()
+    bindEvents()
+}
+
+init()
+
+},{"./datamanager.js":1,"./filter.js":3,"./main.js":5,"./sort.js":7}],5:[function(require,module,exports){
+const { dom, find, findAll } = require('./dom.js')
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const { doFilter } = require('./filter.js')
+const {
+    getVisible,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    getSortDirection,
+    possibleFilters,
+} = require('./storage.js')
+
+const removeChildren = (node) => {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild)
+    }
+}
+
+const renderStatic = () => {
+    const renderEnvironmentTable = () => {
+        const environment = manager.environment
+        const rows = Object.keys(environment).map((key) => dom.getStaticRow(key, environment[key]))
+        const table = document.getElementById('environment')
+        removeChildren(table)
+        rows.forEach((row) => table.appendChild(row))
+    }
+    renderEnvironmentTable()
+}
+
+const addItemToggleListener = (elem) => {
+    elem.addEventListener('click', ({ target }) => {
+        const id = target.parentElement.dataset.id
+        manager.toggleCollapsedItem(id)
+
+        const collapsedIds = getCollapsedIds()
+        if (collapsedIds.includes(id)) {
+            const updated = collapsedIds.filter((item) => item !== id)
+            setCollapsedIds(updated)
+        } else {
+            collapsedIds.push(id)
+            setCollapsedIds(collapsedIds)
+        }
+        redraw()
+    })
+}
+
+const renderContent = (tests) => {
+    const sortAttr = getSort(manager.initialSort)
+    const sortAsc = JSON.parse(getSortDirection())
+    const rows = tests.map(dom.getResultTBody)
+    const table = document.getElementById('results-table')
+    const tableHeader = document.getElementById('results-table-head')
+
+    const newTable = document.createElement('table')
+    newTable.id = 'results-table'
+
+    // remove all sorting classes and set the relevant
+    findAll('.sortable', tableHeader).forEach((elem) => elem.classList.remove('asc', 'desc'))
+    tableHeader.querySelector(`.sortable[data-column-type="${sortAttr}"]`)?.classList.add(sortAsc ? 'desc' : 'asc')
+    newTable.appendChild(tableHeader)
+
+    if (!rows.length) {
+        const emptyTable = document.getElementById('template_results-table__body--empty').content.cloneNode(true)
+        newTable.appendChild(emptyTable)
+    } else {
+        rows.forEach((row) => {
+            if (!!row) {
+                findAll('.collapsible td:not(.col-links', row).forEach(addItemToggleListener)
+                find('.logexpander', row).addEventListener('click',
+                    (evt) => evt.target.parentNode.classList.toggle('expanded'),
+                )
+                newTable.appendChild(row)
+            }
+        })
+    }
+
+    table.replaceWith(newTable)
+}
+
+const renderDerived = () => {
+    const currentFilter = getVisible()
+    possibleFilters.forEach((result) => {
+        const input = document.querySelector(`input[data-test-result="${result}"]`)
+        input.checked = currentFilter.includes(result)
+    })
+}
+
+const bindEvents = () => {
+    const filterColumn = (evt) => {
+        const { target: element } = evt
+        const { testResult } = element.dataset
+
+        doFilter(testResult, element.checked)
+        const collapsedIds = getCollapsedIds()
+        const updated = manager.renderData.tests.map((test) => {
+            return {
+                ...test,
+                collapsed: collapsedIds.includes(test.id),
+            }
+        })
+        manager.setRender(updated)
+        redraw()
+    }
+
+    const header = document.getElementById('environment-header')
+    header.addEventListener('click', () => {
+        const table = document.getElementById('environment')
+        table.classList.toggle('hidden')
+        header.classList.toggle('collapsed')
+    })
+
+    findAll('input[name="filter_checkbox"]').forEach((elem) => {
+        elem.addEventListener('click', filterColumn)
+    })
+
+    findAll('.sortable').forEach((elem) => {
+        elem.addEventListener('click', (evt) => {
+            const { target: element } = evt
+            const { columnType } = element.dataset
+            doSort(columnType)
+            redraw()
+        })
+    })
+
+    document.getElementById('show_all_details').addEventListener('click', () => {
+        manager.allCollapsed = false
+        setCollapsedIds([])
+        redraw()
+    })
+    document.getElementById('hide_all_details').addEventListener('click', () => {
+        manager.allCollapsed = true
+        const allIds = manager.renderData.tests.map((test) => test.id)
+        setCollapsedIds(allIds)
+        redraw()
+    })
+}
+
+const redraw = () => {
+    const { testSubset } = manager
+
+    renderContent(testSubset)
+    renderDerived()
+}
+
+module.exports = {
+    redraw,
+    bindEvents,
+    renderStatic,
+}
+
+},{"./datamanager.js":1,"./dom.js":2,"./filter.js":3,"./sort.js":7,"./storage.js":8}],6:[function(require,module,exports){
+class MediaViewer {
+    constructor(assets) {
+        this.assets = assets
+        this.index = 0
+    }
+
+    nextActive() {
+        this.index = this.index === this.assets.length - 1 ? 0 : this.index + 1
+        return [this.activeFile, this.index]
+    }
+
+    prevActive() {
+        this.index = this.index === 0 ? this.assets.length - 1 : this.index -1
+        return [this.activeFile, this.index]
+    }
+
+    get currentIndex() {
+        return this.index
+    }
+
+    get activeFile() {
+        return this.assets[this.index]
+    }
+}
+
+
+const setup = (resultBody, assets) => {
+    if (!assets.length) {
+        resultBody.querySelector('.media').classList.add('hidden')
+        return
+    }
+
+    const mediaViewer = new MediaViewer(assets)
+    const container = resultBody.querySelector('.media-container')
+    const leftArrow = resultBody.querySelector('.media-container__nav--left')
+    const rightArrow = resultBody.querySelector('.media-container__nav--right')
+    const mediaName = resultBody.querySelector('.media__name')
+    const counter = resultBody.querySelector('.media__counter')
+    const imageEl = resultBody.querySelector('img')
+    const sourceEl = resultBody.querySelector('source')
+    const videoEl = resultBody.querySelector('video')
+
+    const setImg = (media, index) => {
+        if (media?.format_type === 'image') {
+            imageEl.src = media.path
+
+            imageEl.classList.remove('hidden')
+            videoEl.classList.add('hidden')
+        } else if (media?.format_type === 'video') {
+            sourceEl.src = media.path
+
+            videoEl.classList.remove('hidden')
+            imageEl.classList.add('hidden')
+        }
+
+        mediaName.innerText = media?.name
+        counter.innerText = `${index + 1} / ${assets.length}`
+    }
+    setImg(mediaViewer.activeFile, mediaViewer.currentIndex)
+
+    const moveLeft = () => {
+        const [media, index] = mediaViewer.prevActive()
+        setImg(media, index)
+    }
+    const doRight = () => {
+        const [media, index] = mediaViewer.nextActive()
+        setImg(media, index)
+    }
+    const openImg = () => {
+        window.open(mediaViewer.activeFile.path, '_blank')
+    }
+    if (assets.length === 1) {
+        container.classList.add('media-container--fullscreen')
+    } else {
+        leftArrow.addEventListener('click', moveLeft)
+        rightArrow.addEventListener('click', doRight)
+    }
+    imageEl.addEventListener('click', openImg)
+}
+
+module.exports = {
+    setup,
+}
+
+},{}],7:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const storageModule = require('./storage.js')
+
+const genericSort = (list, key, ascending, customOrder) => {
+    let sorted
+    if (customOrder) {
+        sorted = list.sort((a, b) => {
+            const aValue = a.result.toLowerCase()
+            const bValue = b.result.toLowerCase()
+
+            const aIndex = customOrder.findIndex((item) => item.toLowerCase() === aValue)
+            const bIndex = customOrder.findIndex((item) => item.toLowerCase() === bValue)
+
+            // Compare the indices to determine the sort order
+            return aIndex - bIndex
+        })
+    } else {
+        sorted = list.sort((a, b) => a[key] === b[key] ? 0 : a[key] > b[key] ? 1 : -1)
+    }
+
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const durationSort = (list, ascending) => {
+    const parseDuration = (duration) => {
+        if (duration.includes(':')) {
+            // If it's in the format "HH:mm:ss"
+            const [hours, minutes, seconds] = duration.split(':').map(Number)
+            return (hours * 3600 + minutes * 60 + seconds) * 1000
+        } else {
+            // If it's in the format "nnn ms"
+            return parseInt(duration)
+        }
+    }
+    const sorted = list.sort((a, b) => parseDuration(a['duration']) - parseDuration(b['duration']))
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const doInitSort = () => {
+    const type = storageModule.getSort(manager.initialSort)
+    const ascending = storageModule.getSortDirection()
+    const list = manager.testSubset
+    const initialOrder = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed', 'Skipped', 'Passed']
+
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    if (type?.toLowerCase() === 'original') {
+        manager.setRender(list)
+    } else {
+        let sortedList
+        switch (type) {
+        case 'duration':
+            sortedList = durationSort(list, ascending)
+            break
+        case 'result':
+            sortedList = genericSort(list, type, ascending, initialOrder)
+            break
+        default:
+            sortedList = genericSort(list, type, ascending)
+            break
+        }
+        manager.setRender(sortedList)
+    }
+}
+
+const doSort = (type, skipDirection) => {
+    const newSortType = storageModule.getSort(manager.initialSort) !== type
+    const currentAsc = storageModule.getSortDirection()
+    let ascending
+    if (skipDirection) {
+        ascending = currentAsc
+    } else {
+        ascending = newSortType ? false : !currentAsc
+    }
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    const list = manager.testSubset
+    const sortedList = type === 'duration' ? durationSort(list, ascending) : genericSort(list, type, ascending)
+    manager.setRender(sortedList)
+}
+
+module.exports = {
+    doInitSort,
+    doSort,
+}
+
+},{"./datamanager.js":1,"./storage.js":8}],8:[function(require,module,exports){
+const possibleFilters = [
+    'passed',
+    'skipped',
+    'failed',
+    'error',
+    'xfailed',
+    'xpassed',
+    'rerun',
+]
+
+const getVisible = () => {
+    const url = new URL(window.location.href)
+    const settings = new URLSearchParams(url.search).get('visible')
+    const lower = (item) => {
+        const lowerItem = item.toLowerCase()
+        if (possibleFilters.includes(lowerItem)) {
+            return lowerItem
+        }
+        return null
+    }
+    return settings === null ?
+        possibleFilters :
+        [...new Set(settings?.split(',').map(lower).filter((item) => item))]
+}
+
+const hideCategory = (categoryToHide) => {
+    const url = new URL(window.location.href)
+    const visibleParams = new URLSearchParams(url.search).get('visible')
+    const currentVisible = visibleParams ? visibleParams.split(',') : [...possibleFilters]
+    const settings = [...new Set(currentVisible)].filter((f) => f !== categoryToHide).join(',')
+
+    url.searchParams.set('visible', settings)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const showCategory = (categoryToShow) => {
+    if (typeof window === 'undefined') {
+        return
+    }
+    const url = new URL(window.location.href)
+    const currentVisible = new URLSearchParams(url.search).get('visible')?.split(',').filter(Boolean) ||
+        [...possibleFilters]
+    const settings = [...new Set([categoryToShow, ...currentVisible])]
+    const noFilter = possibleFilters.length === settings.length || !settings.length
+
+    noFilter ? url.searchParams.delete('visible') : url.searchParams.set('visible', settings.join(','))
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getSort = (initialSort) => {
+    const url = new URL(window.location.href)
+    let sort = new URLSearchParams(url.search).get('sort')
+    if (!sort) {
+        sort = initialSort || 'result'
+    }
+    return sort
+}
+
+const setSort = (type) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', type)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getCollapsedCategory = (renderCollapsed) => {
+    let categories
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        const collapsedItems = new URLSearchParams(url.search).get('collapsed')
+        switch (true) {
+        case !renderCollapsed && collapsedItems === null:
+            categories = ['passed']
+            break
+        case collapsedItems?.length === 0 || /^["']{2}$/.test(collapsedItems):
+            categories = []
+            break
+        case /^all$/.test(collapsedItems) || collapsedItems === null && /^all$/.test(renderCollapsed):
+            categories = [...possibleFilters]
+            break
+        default:
+            categories = collapsedItems?.split(',').map((item) => item.toLowerCase()) || renderCollapsed
+            break
+        }
+    } else {
+        categories = []
+    }
+    return categories
+}
+
+const getSortDirection = () => JSON.parse(sessionStorage.getItem('sortAsc')) || false
+const setSortDirection = (ascending) => sessionStorage.setItem('sortAsc', ascending)
+
+const getCollapsedIds = () => JSON.parse(sessionStorage.getItem('collapsedIds')) || []
+const setCollapsedIds = (list) => sessionStorage.setItem('collapsedIds', JSON.stringify(list))
+
+module.exports = {
+    getVisible,
+    hideCategory,
+    showCategory,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    setSort,
+    getSortDirection,
+    setSortDirection,
+    getCollapsedCategory,
+    possibleFilters,
+}
+
+},{}]},{},[4]);
+    </script>
+  </footer>
+</html>

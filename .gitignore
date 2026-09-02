@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment
+.env
+
+# macOS
+.DS_Store
+._*
+__MACOSX/
+
+# IDE
+.idea/
+.vscode/

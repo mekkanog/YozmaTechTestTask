@@ -1,0 +1,23 @@
+services:
+  api:
+    image: infralightio/test-integration-api:latest
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/swagger/doc.json"]
+      interval: 1s
+      timeout: 2s
+      retries: 30
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    environment:
+      API_BASE_URL: http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - ./reports:/tests/reports
+    command: ["pytest", "-m", "not load"]
